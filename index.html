@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>curbsidemall Support</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <style>
     body {
@@ -37,7 +37,22 @@
       flex: 1;
       padding: 10px;
       overflow-y: auto;
-      background: #fafafa;
+      font-size: 14px;
+    }
+
+    .msg {
+      margin-bottom: 8px;
+    }
+
+    .user {
+      text-align: right;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .bot {
+      text-align: left;
+      color: #555;
     }
 
     .chat-footer {
@@ -59,23 +74,6 @@
       padding: 0 18px;
       cursor: pointer;
     }
-
-    .msg {
-      margin-bottom: 10px;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .user {
-      text-align: right;
-      color: #333;
-      font-weight: bold;
-    }
-
-    .bot {
-      text-align: left;
-      color: #555;
-    }
   </style>
 </head>
 
@@ -84,65 +82,54 @@
 <div class="chat-widget">
   <div class="chat-header">curbsidemall Support</div>
 
-  <div class="chat-body" id="chatBox">
-    <div class="msg bot">
-      👋 Hi! Ask me anything about curbsidemall.
-    </div>
+  <div class="chat-body" id="chatBody">
+    <div class="msg bot">👋 Hi! Ask me anything about curbsidemall.</div>
   </div>
 
   <div class="chat-footer">
-    <input
-      id="userInput"
-      type="text"
-      placeholder="Type your question..."
-      onkeydown="if(event.key==='Enter') sendMessage()"
-    />
+    <input type="text" id="userInput" placeholder="Type your question..." />
     <button onclick="sendMessage()">Send</button>
   </div>
 </div>
 
 <script>
-  async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const message = input.value.trim();
-    if (!message) return;
+  const WEBHOOK_URL = "https://imgauravanimator.app.n8n.cloud/webhook/curbsidemall-faq-bot";
 
-    appendMessage("user", message);
-    input.value = "";
-
-    try {
-      const response = await fetch(
-        "https://imgauravanimator.app.n8n.cloud/webhook/curbsidemall-faq-bot",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            chatInput: message
-          })
-        }
-      );
-
-      const data = await response.json();
-      appendMessage("bot", data.reply || data.text || "No response received.");
-
-    } catch (error) {
-      appendMessage("bot", "⚠️ Server error. Please try again.");
-    }
-  }
-
-  function appendMessage(sender, text) {
-    const chatBox = document.getElementById("chatBox");
+  function addMessage(text, sender) {
+    const chatBody = document.getElementById("chatBody");
     const msg = document.createElement("div");
     msg.className = "msg " + sender;
     msg.innerText = text;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBody.appendChild(msg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatInput: text })
+      });
+
+      const data = await res.json();
+      addMessage(data.reply || "No response from bot", "bot");
+
+    } catch (e) {
+      addMessage("⚠️ Server error. Please try again.", "bot");
+    }
   }
 </script>
 
 </body>
 </html>
+
 
 
